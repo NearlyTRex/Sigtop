@@ -94,8 +94,8 @@ PowerShell to run sigtop.
 If you have installed [WSL][12], you may find it simpler to cross-compile. For
 example, if you are running Ubuntu (24.04 or later) in WSL:
 
-	sudo apt install golang gcc-mingw-w64-x86-64
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go install github.com/tbvdm/sigtop/cmd/sigtop@master
+	sudo apt install golang gcc-mingw-w64-x86-64-win32
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc-win32 go install github.com/tbvdm/sigtop/cmd/sigtop@master
 
 This command installs `sigtop.exe` in `~/go/bin/windows_amd64`. You can move
 the binary to another location if you wish. For example:

@@ -10,7 +10,7 @@ jobs:
     permissions:
       contents: write
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout
@@ -21,7 +21,17 @@ jobs:
         with:
           go-version: stable
 
+      - name: apt
+        run: |
+          sudo apt update
+          sudo apt install gcc-mingw-w64-x86-64-win32
+
       - name: build
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: 1
+          CC: x86_64-w64-mingw32-gcc-win32
         run: go build -ldflags='-s -w' -trimpath ./cmd/sigtop
 
       - name: release

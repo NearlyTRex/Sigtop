@@ -116,11 +116,11 @@ jobs:
       uses: Vampire/setup-wsl@v6
       with:
         distribution: Ubuntu-24.04
-        additional-packages: gcc-mingw-w64-x86-64 golang
+        additional-packages: gcc-mingw-w64-x86-64-win32 golang
 
     - name: build
       shell: wsl-bash {0}
       run: |
         uname -a
         go version
-        GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build ./cmd/sigtop
+        GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc-win32 go build ./cmd/sigtop
