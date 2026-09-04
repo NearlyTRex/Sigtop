@@ -15,36 +15,9 @@
 package main
 
 import (
-	"errors"
-	"io/fs"
 	"mime"
 	"strings"
-
-	"github.com/tbvdm/go-openbsd"
 )
-
-// unveilMimeFiles unveils files that the mime package tries to read. See the
-// mimeGlobs and typeFiles slices in $GOROOT/src/mime.
-func unveilMimeFiles() error {
-	files := [...]string{
-		"/etc/apache/mime.types",
-		"/etc/apache2/mime.types",
-		"/etc/httpd/conf/mime.types",
-		"/etc/mime.types",
-		"/usr/local/share/mime/globs2",
-		"/usr/share/mime/globs2",
-		"/usr/share/misc/mime.types",
-	}
-
-	for _, file := range files {
-		err := openbsd.Unveil(file, "r")
-		if err != nil && !errors.Is(err, fs.ErrNotExist) {
-			return err
-		}
-	}
-
-	return nil
-}
 
 func addContentTypes() error {
 	types := [...]struct {

@@ -145,7 +145,11 @@ func cmdExportAttachments(args []string) cmdStatus {
 		log.Fatal(err)
 	}
 
-	if err := unveilMimeFiles(); err != nil {
+	if err := openbsd.UnveilMime(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := openbsd.UnveilTime(); err != nil {
 		log.Fatal(err)
 	}
 

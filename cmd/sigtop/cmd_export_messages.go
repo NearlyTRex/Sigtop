@@ -144,6 +144,10 @@ func cmdExportMessages(args []string) cmdStatus {
 		log.Fatal(err)
 	}
 
+	if err := openbsd.UnveilTime(); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := openbsd.Pledge("stdio rpath wpath cpath flock"); err != nil {
 		log.Fatal(err)
 	}
