@@ -15,21 +15,20 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 
-	"github.com/tbvdm/sigtop/errio"
 	"github.com/tbvdm/sigtop/signal"
 )
 
-func jsonWriteMessages(ew *errio.Writer, msgs []signal.Message) error {
-	fmt.Fprintln(ew, "[")
+func jsonWriteMessages(bw *bufio.Writer, msgs []signal.Message) {
+	fmt.Fprintln(bw, "[")
 	for i, msg := range msgs {
-		fmt.Fprint(ew, msg.JSON)
+		bw.WriteString(msg.JSON)
 		if i+1 < len(msgs) {
-			fmt.Fprint(ew, ",")
+			bw.WriteByte(',')
 		}
-		fmt.Fprintln(ew)
+		bw.WriteByte('\n')
 	}
-	fmt.Fprintln(ew, "]")
-	return ew.Err()
+	fmt.Fprintln(bw, "]")
 }

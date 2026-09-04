@@ -15,136 +15,135 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/tbvdm/sigtop/errio"
 	"github.com/tbvdm/sigtop/signal"
 )
 
-func textWriteMessages(ew *errio.Writer, msgs []signal.Message) error {
-	textWriteRecipientField(ew, "", "Conversation", msgs[0].Conversation)
-	fmt.Fprintln(ew)
+func textWriteMessages(bw *bufio.Writer, msgs []signal.Message) {
+	textWriteRecipientField(bw, "", "Conversation", msgs[0].Conversation)
+	fmt.Fprintln(bw)
 	for _, msg := range msgs {
-		textWriteMessage(ew, &msg)
+		textWriteMessage(bw, &msg)
 	}
-	return ew.Err()
 }
 
-func textWriteMessage(ew *errio.Writer, msg *signal.Message) {
+func textWriteMessage(bw *bufio.Writer, msg *signal.Message) {
 	if msg.IsOutgoing() {
-		textWriteField(ew, "", "From", "You")
+		textWriteField(bw, "", "From", "You")
 	} else if msg.Source != nil {
-		textWriteRecipientField(ew, "", "From", msg.Source)
+		textWriteRecipientField(bw, "", "From", msg.Source)
 	}
 	if msg.Type != "" {
-		textWriteField(ew, "", "Type", msg.Type)
+		textWriteField(bw, "", "Type", msg.Type)
 	} else {
-		textWriteField(ew, "", "Type", "unknown")
+		textWriteField(bw, "", "Type", "unknown")
 	}
 	if msg.TimeSent != 0 {
-		textWriteTimeField(ew, "", "Sent", msg.TimeSent)
+		textWriteTimeField(bw, "", "Sent", msg.TimeSent)
 	}
 	if !msg.IsOutgoing() {
-		textWriteTimeField(ew, "", "Received", msg.TimeRecv)
+		textWriteTimeField(bw, "", "Received", msg.TimeRecv)
 	}
-	textWriteAttachmentFields(ew, "", msg.Attachments)
+	textWriteAttachmentFields(bw, "", msg.Attachments)
 	for _, rct := range msg.Reactions {
-		textWriteFieldf(ew, "", "Reaction", "%s from %s", rct.Emoji, rct.Recipient.DetailedDisplayName())
+		textWriteFieldf(bw, "", "Reaction", "%s from %s", rct.Emoji, rct.Recipient.DetailedDisplayName())
 	}
 	if len(msg.Edits) == 0 {
-		textWriteQuote(ew, "", msg.Quote)
-		textWriteBody(ew, "", &msg.Body)
+		textWriteQuote(bw, "", msg.Quote)
+		textWriteBody(bw, "", &msg.Body)
 	} else {
-		textWriteFieldf(ew, "", "Edited", "%d versions", len(msg.Edits))
-		textWriteEditHistory(ew, msg.Edits)
+		textWriteFieldf(bw, "", "Edited", "%d versions", len(msg.Edits))
+		textWriteEditHistory(bw, msg.Edits)
 	}
-	fmt.Fprintln(ew)
+	fmt.Fprintln(bw)
 }
 
-func textWriteField(ew *errio.Writer, prefix, field, value string) {
+func textWriteField(bw *bufio.Writer, prefix, field, value string) {
 	if prefix != "" {
 		prefix += " "
 	}
-	fmt.Fprintf(ew, "%s%s: %s\n", prefix, field, value)
+	fmt.Fprintf(bw, "%s%s: %s\n", prefix, field, value)
 }
 
-func textWriteFieldf(ew *errio.Writer, prefix, field, format string, a ...any) {
-	textWriteField(ew, prefix, field, fmt.Sprintf(format, a...))
+func textWriteFieldf(bw *bufio.Writer, prefix, field, format string, a ...any) {
+	textWriteField(bw, prefix, field, fmt.Sprintf(format, a...))
 }
 
-func textWriteRecipientField(ew *errio.Writer, prefix, field string, rpt *signal.Recipient) {
-	textWriteField(ew, prefix, field, rpt.DetailedDisplayName())
+func textWriteRecipientField(bw *bufio.Writer, prefix, field string, rpt *signal.Recipient) {
+	textWriteField(bw, prefix, field, rpt.DetailedDisplayName())
 }
 
-func textWriteTimeField(ew *errio.Writer, prefix, field string, msec int64) {
+func textWriteTimeField(bw *bufio.Writer, prefix, field string, msec int64) {
 	s := "unknown"
 	if msec >= 0 {
 		s = time.UnixMilli(msec).Format("Mon, 2 Jan 2006 15:04:05 -0700")
 	}
-	textWriteField(ew, prefix, field, s)
+	textWriteField(bw, prefix, field, s)
 }
 
-func textWriteAttachmentFields(ew *errio.Writer, prefix string, atts []signal.Attachment) {
+func textWriteAttachmentFields(bw *bufio.Writer, prefix string, atts []signal.Attachment) {
 	for _, att := range atts {
 		fileName := "no filename"
 		if att.FileName != "" {
 			fileName = att.FileName
 		}
-		textWriteFieldf(ew, prefix, "Attachment", "%s (%s, %d bytes)", fileName, att.ContentType, att.Size)
+		textWriteFieldf(bw, prefix, "Attachment", "%s (%s, %d bytes)", fileName, att.ContentType, att.Size)
 	}
 }
 
-func textWriteBody(ew *errio.Writer, prefix string, body *signal.MessageBody) {
+func textWriteBody(bw *bufio.Writer, prefix string, body *signal.MessageBody) {
 	if body.Text == "" {
 		return
 	}
-	fmt.Fprintln(ew, prefix)
+	fmt.Fprintln(bw, prefix)
 	if prefix != "" {
 		prefix += " "
 	}
 	for _, line := range strings.Split(body.Text, "\n") {
-		fmt.Fprintln(ew, prefix+line)
+		fmt.Fprintln(bw, prefix+line)
 	}
 }
 
-func textWriteQuote(ew *errio.Writer, prefix string, qte *signal.Quote) {
+func textWriteQuote(bw *bufio.Writer, prefix string, qte *signal.Quote) {
 	if qte == nil {
 		return
 	}
-	fmt.Fprintln(ew, prefix)
+	fmt.Fprintln(bw, prefix)
 	if prefix != "" {
 		prefix += " "
 	}
 	prefix += ">"
-	textWriteRecipientField(ew, prefix, "From", qte.Recipient)
-	textWriteTimeField(ew, prefix, "Sent", qte.TimeSent)
-	textWriteQuoteAttachmentFields(ew, prefix, qte.Attachments)
-	textWriteBody(ew, prefix, &qte.Body)
+	textWriteRecipientField(bw, prefix, "From", qte.Recipient)
+	textWriteTimeField(bw, prefix, "Sent", qte.TimeSent)
+	textWriteQuoteAttachmentFields(bw, prefix, qte.Attachments)
+	textWriteBody(bw, prefix, &qte.Body)
 }
 
-func textWriteQuoteAttachmentFields(ew *errio.Writer, prefix string, atts []signal.QuoteAttachment) {
+func textWriteQuoteAttachmentFields(bw *bufio.Writer, prefix string, atts []signal.QuoteAttachment) {
 	for _, att := range atts {
 		fileName := "no filename"
 		if att.FileName != "" {
 			fileName = att.FileName
 		}
-		textWriteFieldf(ew, prefix, "Attachment", "%s (%s)", fileName, att.ContentType)
+		textWriteFieldf(bw, prefix, "Attachment", "%s (%s)", fileName, att.ContentType)
 	}
 }
 
-func textWriteEditHistory(ew *errio.Writer, edits []signal.Edit) {
-	fmt.Fprintln(ew)
+func textWriteEditHistory(bw *bufio.Writer, edits []signal.Edit) {
+	fmt.Fprintln(bw)
 	prefix := "|"
 	for i := range edits {
-		textWriteFieldf(ew, prefix, "Version", "%d", len(edits)-i)
-		textWriteAttachmentFields(ew, prefix, edits[i].Attachments)
-		textWriteTimeField(ew, prefix, "Sent", edits[i].TimeEdit)
-		textWriteQuote(ew, prefix, edits[i].Quote)
-		textWriteBody(ew, prefix, &edits[i].Body)
+		textWriteFieldf(bw, prefix, "Version", "%d", len(edits)-i)
+		textWriteAttachmentFields(bw, prefix, edits[i].Attachments)
+		textWriteTimeField(bw, prefix, "Sent", edits[i].TimeEdit)
+		textWriteQuote(bw, prefix, edits[i].Quote)
+		textWriteBody(bw, prefix, &edits[i].Body)
 		if i+1 < len(edits) {
-			fmt.Fprintln(ew, prefix)
+			fmt.Fprintln(bw, prefix)
 		}
 	}
 }

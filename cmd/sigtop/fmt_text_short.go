@@ -15,29 +15,28 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/tbvdm/sigtop/errio"
 	"github.com/tbvdm/sigtop/signal"
 )
 
-func textShortWriteMessages(ew *errio.Writer, msgs []signal.Message) error {
+func textShortWriteMessages(bw *bufio.Writer, msgs []signal.Message) {
 	for _, msg := range msgs {
-		textShortWriteMessage(ew, &msg)
+		textShortWriteMessage(bw, &msg)
 	}
-	return ew.Err()
 }
 
-func textShortWriteMessage(ew *errio.Writer, msg *signal.Message) {
+func textShortWriteMessage(bw *bufio.Writer, msg *signal.Message) {
 	name := "You"
 	if !msg.IsOutgoing() {
 		name = msg.Source.DisplayName()
 	}
-	fmt.Fprintf(ew, "%s %s:", textShortFormatTime(msg.TimeSent), name)
+	fmt.Fprintf(bw, "%s %s:", textShortFormatTime(msg.TimeSent), name)
 	if msg.Type != "incoming" && msg.Type != "outgoing" {
-		fmt.Fprintf(ew, " [%s message]", msg.Type)
+		fmt.Fprintf(bw, " [%s message]", msg.Type)
 	} else {
 		var details []string
 		if msg.Quote != nil {
@@ -54,13 +53,13 @@ func textShortWriteMessage(ew *errio.Writer, msg *signal.Message) {
 			details = append(details, fmt.Sprintf("%d attachment%s", len(msg.Attachments), plural))
 		}
 		if len(details) > 0 {
-			fmt.Fprintf(ew, " [%s]", strings.Join(details, ", "))
+			fmt.Fprintf(bw, " [%s]", strings.Join(details, ", "))
 		}
 		if msg.Body.Text != "" {
-			fmt.Fprint(ew, " "+msg.Body.Text)
+			fmt.Fprint(bw, " "+msg.Body.Text)
 		}
 	}
-	fmt.Fprintln(ew)
+	fmt.Fprintln(bw)
 }
 
 func textShortFormatTime(msec int64) string {

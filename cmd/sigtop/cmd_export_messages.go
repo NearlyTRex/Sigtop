@@ -15,6 +15,7 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"io/fs"
 	"log"
@@ -22,7 +23,6 @@ import (
 
 	"github.com/tbvdm/go-openbsd"
 	"github.com/tbvdm/sigtop/at"
-	"github.com/tbvdm/sigtop/errio"
 	"github.com/tbvdm/sigtop/filename"
 	"github.com/tbvdm/sigtop/getopt"
 	"github.com/tbvdm/sigtop/signal"
@@ -204,18 +204,18 @@ func exportConversationMessages(ctx *signal.Context, d at.Dir, conv *signal.Conv
 	if err != nil {
 		return err
 	}
-	ew := errio.NewWriter(f)
+	bw := bufio.NewWriter(f)
 
 	switch opts.format {
 	case formatJSON:
-		err = jsonWriteMessages(ew, msgs)
+		jsonWriteMessages(bw, msgs)
 	case formatText:
-		err = textWriteMessages(ew, msgs)
+		textWriteMessages(bw, msgs)
 	case formatTextShort:
-		err = textShortWriteMessages(ew, msgs)
+		textShortWriteMessages(bw, msgs)
 	}
 
-	if err != nil {
+	if err := bw.Flush(); err != nil {
 		f.Close()
 		return err
 	}
