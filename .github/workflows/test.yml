@@ -7,17 +7,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15, macos-26, ubuntu-22.04, ubuntu-24.04, windows-latest]
-        go: ['1.25', '1.26']
+        os:
+          - macos-14
+          - macos-15
+          - macos-26
+          - macos-26-intel
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - ubuntu-26.04
+          - ubuntu-26.04-arm
+          - windows-latest
+          - windows-11-arm
+        go:
+          - '1.26'
+          - '1.27'
 
     runs-on: ${{matrix.os}}
 
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: setup-go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{matrix.go}}
 
@@ -35,7 +47,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: dragonfly-vm
         uses: vmactions/dragonflybsd-vm@v1
@@ -53,7 +65,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: freebsd-vm
         uses: vmactions/freebsd-vm@v1
@@ -70,7 +82,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: netbsd-vm
         uses: vmactions/netbsd-vm@v1
@@ -90,7 +102,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: openbsd-vm
         uses: vmactions/openbsd-vm@v1
@@ -110,10 +122,10 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: setup-wsl
-      uses: Vampire/setup-wsl@v6
+      uses: Vampire/setup-wsl@v7
       with:
         distribution: Ubuntu-24.04
         additional-packages: gcc-mingw-w64-x86-64-win32 golang
